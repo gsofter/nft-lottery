@@ -13,6 +13,9 @@ contract Lottery is Ownable {
     IERC20 private wethContract;
     IMoldNFT private moldNftContract;
     bool private moldNftInitialized;
+    bool private lotteryCreated;
+
+    event LotteryCreated(uint256 lotteryId, string _lotteryName);
 
     constructor() {
         lotteryId = 0;
@@ -20,11 +23,14 @@ contract Lottery is Ownable {
         players.push(payable(admin));
         wethContract = IERC20(wethAddress);
         moldNftInitialized = false;
+        lotteryCreated = false;
     }
 
     function createLottery(string memory _lotteryName) public onlyOwner {
-        require(moldNftInitialized == true, "NFT should initialized");
-        moldNftContract.mint(_lotteryName);
+        require(moldNftInitialized == true, "NFT should initialized!");
+        require(lotteryCreated == false, "Lottery already created!");
+        lotteryId = moldNftContract.mint(_lotteryName);
+        emit LotteryCreated(lotteryId, _lotteryName);
     }
 
     function initializeNFT(address _moldAddress) external onlyOwner {
@@ -38,6 +44,7 @@ contract Lottery is Ownable {
     }
 
     function placeBid() external {
+        require(lotteryCreated == true, "Lottery not started!");
         require(wethContract.balanceOf(msg.sender) > 0.1 ether, "Not enough WETH balance");
         wethContract.transferFrom(msg.sender, address(this), 0.1 ether);
         players.push(msg.sender);
@@ -48,13 +55,16 @@ contract Lottery is Ownable {
     }
 
     function pickWinner() public onlyOwner {
+        require(lotteryCreated == true, "Lottery not started!");
         require(players.length >= 3, "Not enough players in the lottery");
         address winner;
         winner = players[random() % players.length];
+        moldNftContract.transfer(lotteryId, winner);
         resetLottery();
     }
 
     function resetLottery() internal {
         players = new address[](0);
+        lotteryCreated = false;
     }
 }
