@@ -24,7 +24,7 @@ contract Lottery is Ownable {
     constructor() {
         lotteryId = 0;
         admin = msg.sender;
-        players.push(payable(admin));
+        players.push(admin);
         wethContract = IERC20(wethAddress);
         moldNftInitialized = false;
         lotteryCreated = false;
@@ -34,6 +34,7 @@ contract Lottery is Ownable {
         require(moldNftInitialized == true, "NFT should initialized!");
         require(lotteryCreated == false, "Lottery already created!");
         lotteryId = moldNftContract.mint(_lotteryName);
+        lotteryCreated = true;
         emit LotteryCreated(lotteryId, _lotteryName);
     }
 
@@ -49,6 +50,7 @@ contract Lottery is Ownable {
     }
 
     function placeBid() external {
+        require(msg.sender != admin, "Admin can't place bid!");
         require(lotteryCreated == true, "Lottery not started!");
         require(wethContract.balanceOf(msg.sender) > 0.1 ether, "Not enough WETH balance");
         wethContract.transferFrom(msg.sender, address(this), 0.1 ether);
