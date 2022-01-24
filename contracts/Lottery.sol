@@ -3,19 +3,34 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "./IMoldNFT.sol";
 
 contract Lottery is Ownable {
     uint256 private lotteryId;
     address[] public players;
     address public admin;
-    address public wethAddress = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address public constant wethAddress = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     IERC20 private wethContract;
+    IMoldNFT private moldNftContract;
+    bool private moldNftInitialized;
 
     constructor() {
         lotteryId = 0;
         admin = msg.sender;
         players.push(payable(admin));
         wethContract = IERC20(wethAddress);
+        moldNftInitialized = false;
+    }
+
+    function createLottery(string memory _lotteryName) public onlyOwner {
+        require(moldNftInitialized == true, "NFT should initialized");
+        moldNftContract.mint(_lotteryName);
+    }
+
+    function initializeNFT(address _moldAddress) external onlyOwner {
+        require(_moldAddress != address(0), "Invalid address");
+        moldNftContract = IMoldNFT(_moldAddress);
+        moldNftInitialized = true;
     }
 
     function getWETHBalance() public view returns (uint256) {

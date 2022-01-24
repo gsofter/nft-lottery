@@ -17,4 +17,6 @@ interface IMoldNFT {
     function ownerOf(uint256) external view returns (address);
 
     function transfer(uint256, address) external;
+
+    function mint(string memory) external returns (uint256);
 }

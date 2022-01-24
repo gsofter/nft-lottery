@@ -4,6 +4,7 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract MoldNFT is ERC721URIStorage, Ownable {
     struct IMoldNFT {
@@ -11,9 +12,11 @@ contract MoldNFT is ERC721URIStorage, Ownable {
         string name;
         string uri;
     }
+
     IMoldNFT[] public molds;
     uint256 public totalMolds;
     mapping(address => bool) private governance;
+    string private baseTokenURI = "ipfs://QmRQ9mB8UDRd3adMndj5NGTD9ajbJYuSQkbdm5mVQFWVxN/";
 
     event Mint(uint256 id, string name, string uri);
 
@@ -37,19 +40,19 @@ contract MoldNFT is ERC721URIStorage, Ownable {
         governance[_minter] = false;
     }
 
-    function mint(string memory _name, string memory _uri) external returns (uint256) {
+    function mint(string memory _name) external returns (uint256) {
         require(governance[msg.sender], "No Permission");
 
         IMoldNFT memory nft;
         nft.id = totalMolds;
         nft.name = _name;
-        nft.uri = _uri;
+        nft.uri = string(abi.encodePacked(baseTokenURI, Strings.toString(nft.id)));
 
         molds.push(nft);
         totalMolds++;
 
         _mint(msg.sender, nft.id);
-        _setTokenURI(nft.id, _uri);
+        _setTokenURI(nft.id, nft.uri);
 
         emit Mint(nft.id, nft.name, nft.uri);
 
@@ -72,5 +75,9 @@ contract MoldNFT is ERC721URIStorage, Ownable {
         require(ownerOf(_nftId) == msg.sender || getApproved(_nftId) == msg.sender, "Not approved");
         require(_target != address(0), "Invalid address");
         _transfer(ownerOf(_nftId), _target, _nftId);
+    }
+
+    function setBaseTokenURI(string memory _tokenUri) public onlyOwner {
+        baseTokenURI = _tokenUri;
     }
 }
