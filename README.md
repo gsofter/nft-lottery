@@ -1,4 +1,19 @@
-# Solidity Template
+# NFT Lottery Contract
+
+### MoldNFT(ERC721)
+
+- mint
+- transfer
+
+### Lottery
+
+- initializeNFT: init MoldNFT contract address
+- createLottery: Mint NFT item and create lottery
+- placeBid: transfer 0.1 WETH from user's wallet and register user's wallet address as candidates
+- pickWinner: randomly select winner and tranfer NFT item to winner
+- resetLottery: close lottery
+
+[Diagram](https://docs.google.com/presentation/d/14OmjJWQNZlw6PVZxER1zZIqPguXlqLtOP3JuHtl3BaA/edit#slide=id.p)
 
 My favorite setup for writing Solidity smart contracts.
 
@@ -9,9 +24,6 @@ My favorite setup for writing Solidity smart contracts.
 - [Solhint](https://github.com/protofire/solhint): linter
 - [Solcover](https://github.com/sc-forks/solidity-coverage): code coverage
 - [Prettier Plugin Solidity](https://github.com/prettier-solidity/prettier-plugin-solidity): code formatter
-
-This is a GitHub template, which means you can reuse it as many times as you want. You can do that by clicking the "Use this
-template" button at the top of the page.
 
 ## Usage
 
