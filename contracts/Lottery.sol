@@ -15,7 +15,11 @@ contract Lottery is Ownable {
     bool private moldNftInitialized;
     bool private lotteryCreated;
 
+    event NftInitialized(address nftAddress);
     event LotteryCreated(uint256 lotteryId, string _lotteryName);
+    event LotteryBidPlaced(uint256 lotteryId, address bidder);
+    event LotteryWinnerPicked(uint256 lotteryId, address winner);
+    event LotteryClosed(uint256 lotteryId);
 
     constructor() {
         lotteryId = 0;
@@ -37,6 +41,7 @@ contract Lottery is Ownable {
         require(_moldAddress != address(0), "Invalid address");
         moldNftContract = IMoldNFT(_moldAddress);
         moldNftInitialized = true;
+        emit NftInitialized(_moldAddress);
     }
 
     function getWETHBalance() public view returns (uint256) {
@@ -48,6 +53,7 @@ contract Lottery is Ownable {
         require(wethContract.balanceOf(msg.sender) > 0.1 ether, "Not enough WETH balance");
         wethContract.transferFrom(msg.sender, address(this), 0.1 ether);
         players.push(msg.sender);
+        emit LotteryBidPlaced(lotteryId, msg.sender);
     }
 
     function random() internal view returns (uint256) {
@@ -60,11 +66,13 @@ contract Lottery is Ownable {
         address winner;
         winner = players[random() % players.length];
         moldNftContract.transfer(lotteryId, winner);
+        emit LotteryWinnerPicked(lotteryId, winner);
         resetLottery();
     }
 
     function resetLottery() internal {
         players = new address[](0);
         lotteryCreated = false;
+        emit LotteryClosed(lotteryId);
     }
 }
